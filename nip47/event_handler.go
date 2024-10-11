@@ -269,7 +269,7 @@ func (svc *nip47Service) HandleEvent(ctx context.Context, relay nostrmodels.Rela
 		"params":              nip47Request.Params,
 	}).Debug("Handling NIP-47 request")
 
-	if nip47Request.Method != models.GET_INFO_METHOD {
+	if nip47Request.Method != models.GET_INFO_METHOD && nip47Request.Method != models.GET_BUDGET_METHOD {
 		scope, err := permissions.RequestMethodToScope(nip47Request.Method)
 		if err != nil {
 			publishResponse(&models.Response{

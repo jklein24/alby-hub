@@ -36,10 +36,6 @@ func NewPermissionsService(db *gorm.DB, eventPublisher events.EventPublisher) *p
 }
 
 func (svc *permissionsService) HasPermission(app *db.App, scope string) (result bool, code string, message string) {
-	if scope == constants.ALWAYS_GRANTED_SCOPE {
-		return true, "", ""
-	}
-
 	appPermission := db.AppPermission{}
 	findPermissionResult := svc.db.Limit(1).Find(&appPermission, &db.AppPermission{
 		AppId: app.ID,
@@ -71,7 +67,6 @@ func (svc *permissionsService) GetPermittedMethods(app *db.App, lnClient lnclien
 	for _, appPermission := range appPermissions {
 		scopes = append(scopes, appPermission.Scope)
 	}
-	scopes = append(scopes, constants.ALWAYS_GRANTED_SCOPE)
 
 	requestMethods := scopesToRequestMethods(scopes)
 
@@ -109,8 +104,6 @@ func scopesToRequestMethods(scopes []string) []string {
 
 func scopeToRequestMethods(scope string) []string {
 	switch scope {
-	case constants.ALWAYS_GRANTED_SCOPE:
-		return []string{models.GET_BUDGET_METHOD}
 	case constants.PAY_INVOICE_SCOPE:
 		return []string{models.PAY_INVOICE_METHOD, models.PAY_KEYSEND_METHOD, models.MULTI_PAY_INVOICE_METHOD, models.MULTI_PAY_KEYSEND_METHOD}
 	case constants.GET_BALANCE_SCOPE:
@@ -151,7 +144,7 @@ func RequestMethodToScope(requestMethod string) (string, error) {
 	case models.GET_BALANCE_METHOD:
 		return constants.GET_BALANCE_SCOPE, nil
 	case models.GET_BUDGET_METHOD:
-		return constants.ALWAYS_GRANTED_SCOPE, nil
+		return constants.GET_BUDGET_SCOPE, nil
 	case models.GET_INFO_METHOD:
 		return constants.GET_INFO_SCOPE, nil
 	case models.MAKE_INVOICE_METHOD:
@@ -169,9 +162,9 @@ func RequestMethodToScope(requestMethod string) (string, error) {
 
 func AllScopes() []string {
 	return []string{
-		constants.ALWAYS_GRANTED_SCOPE,
 		constants.PAY_INVOICE_SCOPE,
 		constants.GET_BALANCE_SCOPE,
+		constants.GET_BUDGET_SCOPE,
 		constants.GET_INFO_SCOPE,
 		constants.MAKE_INVOICE_SCOPE,
 		constants.LOOKUP_INVOICE_SCOPE,
